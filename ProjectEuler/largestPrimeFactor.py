@@ -8,9 +8,7 @@ Created on Thu Nov 26 20:11:22 2020
 import math
 
 def isPrime(n):
-    if n % 2 == 0:
-        return False
-    for i in range(3, math.floor((math.sqrt(n) + 1))):
+    for i in range(2, math.floor((math.sqrt(n) + 1))):
         if n % i == 0:
             return False
     return True
