@@ -8,9 +8,12 @@ Created on Thu Nov 26 20:11:22 2020
 import math
 
 def isPrime(n):
-    for i in range(2, math.floor((math.sqrt(n) + 1))):
-        if n % i == 0:
-            return False
+    if n < 2:
+        return False
+    else:
+        for i in range(2, math.floor((math.sqrt(n) + 1))):
+            if n % i == 0:
+                return False
     return True
 
 def largestPrimeFactor(n):
