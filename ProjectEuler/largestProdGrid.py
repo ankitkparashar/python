@@ -11,12 +11,30 @@ def largestProdGrid(grid, nums):
     maxProduct = 1
     for i in range(size):
         sizeRow = len(grid[i])
-        for j in range(sizeRow - nums):
+        for j in range(size):
             #to the right
-            subArr = grid[i][j:j+nums]
-            product = productOfArray(subArr)
-            if product > maxProduct:
-                maxProduct = product
+            rightArray = [grid[i][j+n] for n in range(nums) if j + n < 20]
+            rightProduct = productOfArray(rightArray)
+            if rightProduct > maxProduct:
+                maxProduct = rightProduct
+                
+            #to down
+            downArray = [grid[i + n][j] for n in range(nums) if i + n < 20]
+            downProduct = productOfArray(downArray)
+            if downProduct > maxProduct:
+                maxProduct = downProduct
+                
+            #primary diagonal
+            diag1Array = [grid[i + n][j + n] for n in range(nums) if ((i + n < 20) & (j + n < 20))]
+            diag1Product = productOfArray(diag1Array)
+            if diag1Product > maxProduct:
+                maxProduct = diag1Product
+                    
+            #secondary diagonal
+            diag2Array = [grid[i+n][j-n] for n in range(nums) if i + j == 19]
+            diag2Product = productOfArray(diag2Array)
+            if diag2Product > maxProduct:
+                maxProduct = diag2Product
             
     return True
 
@@ -51,4 +69,4 @@ grid = [[8, 2, 22, 97, 38, 15, 0, 40, 0, 75, 4, 5, 7, 78, 52, 12, 50, 77, 91, 8]
         [20, 73, 35, 29, 78, 31, 90, 1, 74, 31, 49, 71, 48, 86, 81, 16, 23, 57, 5, 54], 
         [1, 70, 54, 71, 83, 51, 54, 69, 16, 92, 33, 48, 61, 43, 52, 1, 89, 19, 67, 48]]
 
-#print(productOfArray([20, 30, 2, 5, 6]))
+#   print(productOfArray([20, 30, 2, 5, 6]))
