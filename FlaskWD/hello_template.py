@@ -3,6 +3,10 @@ from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
+from flask_sqlalchemy import SQLAlchemy
+import os
+
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class NameForm(FlaskForm):
@@ -11,8 +15,31 @@ class NameForm(FlaskForm):
 
 
 app = Flask(__name__)
+db = SQLAlchemy(app)
 bootstrap = Bootstrap(app)
 app.config['SECRET_KEY'] = 'a5tr0N@ut^!23'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    users = db.relationship('User', backref='role')
+
+    def __repr__(self):
+        return '<Role %r>' % self.name
+
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, index=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+
+    def __repr__(self):
+        return '<User %r>' % self.username
 
 
 # @app.route("/")
@@ -38,16 +65,34 @@ app.config['SECRET_KEY'] = 'a5tr0N@ut^!23'
 #     return render_template("index_wtf_bstrp.html", form=form, name=session.get("name"))
 
 # Using Flash message
-@app.route("/", methods=["GET", "POST"])
+# @app.route("/", methods=["GET", "POST"])
+# def index():
+#     form = NameForm()
+#     if form.validate_on_submit():
+#         old_name = session.get('name')
+#         if old_name is not None and old_name != form.name.data:
+#             flash("Looks like you have changed your name!")
+#         session["name"] = form.name.data
+#         return redirect(url_for('index'))
+#     return render_template("index_wtf_bstrp.html", form=form, name=session.get("name"))
+
+# Using SQLAlchemy Database
+@app.route('/', methods=['GET', 'POST'])
 def index():
     form = NameForm()
     if form.validate_on_submit():
-        old_name = session.get('name')
-        if old_name is not None and old_name != form.name.data:
-            flash("Looks like you have changed your name!")
-        session["name"] = form.name.data
+        user = User.query.filter_by(username=form.name.data).first()
+        if user is None:
+            user = User(username=form.name.data)
+            db.session.add(user)
+            db.session.commit()
+            session['known'] = False
+        else:
+            session['known'] = True
+        session['name'] = form.name.data
+        form.name.data = ''
         return redirect(url_for('index'))
-    return render_template("index_wtf_bstrp.html", form=form, name=session.get("name"))
+    return render_template('index_db.html', form=form, name=session.get('name'), known=session.get('known', False))
 
 
 @app.route("/user/<name>")
